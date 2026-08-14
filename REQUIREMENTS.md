@@ -66,7 +66,7 @@ good answer. Rules:
 - [ ] 中英 UI 切换正常（Settings → 语言）
 - [ ] `dsh plugin add` 安装 + 重启后按钮出现
 
-> 开发态验收：1/2/4/5/6 由代码路径保证（`useInput().draft` 读、`setDraft` 写、按钮 disabled、busy 锁、仅替换文本、提示词要求跟随草稿语言）；3 由静默错误分支 + console 日志保证；7 由 locale 注册 `zh`/`en` 字典保证。8 及端到端行为（真实改写效果）需安装发布后在线验收。
+> 开发态验收：1/2/4/5/6 由代码路径保证（`useInput((s) => s).draft` 读、`setDraft` 写、按钮 disabled、busy 锁、仅替换文本、提示词要求跟随草稿语言）；3 由静默错误分支 + console 日志保证；7 由 locale 注册 `zh`/`en` 字典保证。8 及端到端行为（真实改写效果）需安装发布后在线验收。
 
 ## 待定项（已拍板）
 
@@ -80,6 +80,7 @@ good answer. Rules:
 - 提示词已按基线打磨：追加了"混排语言跟随主导语言""不输出引号包裹"两条细则，其余与基线一致。
 - 新增**防覆盖守卫**（基线未要求）：点击时记 `draftRev`，润色期间草稿被继续编辑则丢弃结果，不回填——避免覆盖用户更新的编辑。
 - 新增**模型回退**（基线未要求）：固定 `deepseek-v4-flash` 在 provider 目录缺失时，用 `listModels` 发现的 flash 类模型重试一次。
+- **v0.1.0 → v0.1.1 修 bug**：`useInput` 是 selector hook，必须传 selector（官方写法 `useInput((s) => s)`）；v0.1.0 写成裸调用 `useInput()`，运行时抛 `w is not a function`，被 slot 错误边界捕获后退位（abdicate）整个条目——按钮不渲染且无任何报错提示。教训：slot 标准 props 里所有 `use*` 选择器 hook 都要带 selector 参数（`useProjection` 除外，它本身是 (key, selector) 形式）。
 
 ## 参考实现
 

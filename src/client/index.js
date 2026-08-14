@@ -12,7 +12,10 @@
  */
 import { createElement, useEffect, useRef, useState } from 'react'
 
-export const inject = ['slots']
+// The remote namespaces are HARD dependencies (official pattern, same as the
+// shipped goal plugin): `ctx.get('remote')` bare lookup is unreliable and can
+// silently no-op. Declare the exact namespaces used and read them off ctx.
+export const inject = ['slots', 'remote', 'remote.commands', 'locale']
 
 const ID = 'dsh-composer-polish'
 
@@ -60,23 +63,23 @@ const EN = {
 export function apply(ctx) {
   injectStyle()
 
-  const locale = ctx.get('locale')
   let t = (key) => key
-  if (locale) {
-    try {
-      locale.register(ID, 'zh', ZH)
-      locale.register(ID, 'en', EN)
-      t = locale.bind(ID)
-    } catch (error) {
-      console.error(ID + ': locale registration failed: ' + String(error))
-    }
+  try {
+    ctx.locale.register(ID, 'zh', ZH)
+    ctx.locale.register(ID, 'en', EN)
+    t = ctx.locale.bind(ID)
+  } catch (error) {
+    console.error(ID + ': locale registration failed: ' + String(error))
   }
 
   function PolishButton(props) {
     // Session-scope standard kit: the live input state hook and the public
     // draft write path (both guaranteed by the `conversation.input.right`
-    // slot contract).
-    const input = props.useInput()
+    // slot contract). NOTE: `useInput` is a selector hook — it MUST receive a
+    // selector argument (shipped code calls `useInput((s) => s)`); calling it
+    // bare throws inside useSyncExternalStoreWithSelector and the slot error
+    // boundary retires the whole entry.
+    const input = props.useInput((s) => s)
     const inputActions = props.inputActions
     const sessionId = props.sessionId ? String(props.sessionId) : ''
 
@@ -90,9 +93,7 @@ export function apply(ctx) {
 
     // Re-render on locale switch.
     useEffect(() => {
-      const loc = ctx.get('locale')
-      if (!loc || typeof loc.subscribe !== 'function') return undefined
-      return loc.subscribe(() => setLocaleTick((x) => x + 1))
+      return ctx.locale.subscribe(() => setLocaleTick((x) => x + 1))
     }, [])
 
     const draft = typeof input.draft === 'string' ? input.draft : ''
@@ -101,15 +102,10 @@ export function apply(ctx) {
 
     const onPolish = () => {
       if (disabled) return
-      const remote = ctx.get('remote')
-      if (!remote || !remote.commands || typeof remote.commands.execute !== 'function') {
-        console.error(ID + ': commands remote unavailable')
-        return
-      }
       const draftRev = input.draftRev
       const payload = draft.length > MAX_DRAFT_LENGTH ? draft.slice(0, MAX_DRAFT_LENGTH) : draft
       setBusy(true)
-      remote.commands.execute(sessionId, '/polish ' + payload)
+      ctx.remote.commands.execute(sessionId, '/polish ' + payload)
         .then((res) => {
           const value = res && res.ok ? res.value : null
           const result = value && value.result ? value.result : null
