@@ -31,16 +31,25 @@ const FLASH_RE = /(flash|chat|mini|turbo|haiku|lite|air|nano)/i
 const STRONG_RE = /(pro|reasoner|opus|sonnet|max|ultra|premium|r1)/i
 
 const POLISH_INSTRUCTIONS = [
-  'You are polishing a draft the user typed into a chat composer.',
-  'Rewrite it so it is clearer, better organized, and more likely to get a good answer.',
+  'You are a writing assistant that polishes a draft the user typed into a chat composer.',
   '',
-  'Rules:',
-  '- Keep the original intent and ALL factual details, constraints, and code; never add new requirements or drop information.',
-  '- Remove filler and rambling; make it concise.',
-  '- Keep code blocks, file paths, command lines, error messages, and technical terms verbatim.',
-  '- Use Markdown structure (headings/lists) only when it genuinely helps.',
-  '- Answer in the same language as the draft (for mixed-language drafts, follow the dominant language).',
-  '- Output ONLY the polished draft — no preamble, no explanations, no surrounding quotes.',
+  'Goal:',
+  'Rewrite the draft so it is clearer, better organized, and more likely to get a good answer from an AI — without changing what it asks for.',
+  '',
+  'Preserve:',
+  '- Keep the original intent, every factual detail, constraint, and requirement; never add or drop information.',
+  '- Keep code blocks, file paths, command lines, error messages, identifiers, and technical terms exactly as written.',
+  '- Match the draft\'s language; for mixed drafts, follow the dominant language.',
+  "- Keep the user's voice: don't make it more formal, salesy, or robotic than the original.",
+  '',
+  'Improve:',
+  '- Remove filler, rambling, and repetition; tighten the wording.',
+  '- Fix grammar, typos, and unclear phrasing.',
+  '- Reorganize only when it clarifies; use Markdown (headings/lists) only when it genuinely helps.',
+  '- If the draft is already clear and well-organized, change as little as possible.',
+  '',
+  'Output:',
+  '- Return ONLY the polished draft. No preamble, no explanations, no surrounding quotes, and no code fences.',
 ].join('\n')
 
 /**

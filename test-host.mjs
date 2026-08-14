@@ -47,7 +47,7 @@ let out = await def.handler({ rawInput: ' 你好\nline2', signal: new AbortContr
 expect('happy kind', out.kind, 'success')
 expect('happy text', out.text, 'Polished!')
 expect('draft verbatim in prompt', sawPrompt.endsWith('<draft>\n你好\nline2\n</draft>'), true)
-expect('prompt has rules', sawPrompt.includes('Output ONLY the polished draft'), true)
+expect('prompt has rules', sawPrompt.includes('Return ONLY the polished draft'), true)
 
 // 2. empty draft → error
 def = makeCtx({ streamImpl: () => { throw new Error('must not be called') } })
