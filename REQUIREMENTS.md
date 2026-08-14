@@ -1,6 +1,6 @@
 # dsh-composer-polish — 需求文档
 
-> 状态：已开发（v0.1.3）。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
+> 状态：已开发并验收通过（v0.1.3）。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
 
 ## 一句话目标
 
@@ -66,16 +66,16 @@ Output:
 
 ## 验收清单
 
-- [ ] 写一段啰嗦文字 → 点 ✨ → 几秒后输入框出现优化文本，原文被替换
-- [ ] 空输入时按钮禁用
-- [ ] 连续点两次不会重复触发（loading 状态）
-- [ ] 英文草稿得到英文润色，中文得到中文
-- [ ] 带图片时图片不丢
-- [ ] 会话日志里搜不到草稿原文（`recordInput: false` 生效）
-- [ ] 中英 UI 切换正常（Settings → 语言）
-- [ ] `dsh plugin add` 安装 + 重启后按钮出现
+- [x] 写一段啰嗦文字 → 点 ✨ → 几秒后输入框出现优化文本，原文被替换
+- [x] 空输入时按钮禁用
+- [x] 连续点两次不会重复触发（loading 状态）
+- [x] 英文草稿得到英文润色，中文得到中文
+- [x] 带图片时图片不丢
+- [x] 会话日志里搜不到草稿原文（`recordInput: false` 生效）
+- [x] 中英 UI 切换正常（Settings → 语言）
+- [x] `dsh plugin add` 安装 + 重启后按钮出现
 
-> 开发态验收：1/2/4/5/6 由代码路径保证（`useInput((s) => s).draft` 读、`setDraft` 写、按钮 disabled、busy 锁、仅替换文本、提示词要求跟随草稿语言）；3 由静默错误分支 + console 日志保证；7 由 locale 注册 `zh`/`en` 字典保证。8 及端到端行为（真实改写效果）需安装发布后在线验收。
+> 验收结论（2026-08-14）：8 项全部通过。1–5、7、8 由用户在线实测确认；6 由开发者核实会话日志——8 条 `/polish` 的 `command/run` 事件均无 `args` 字段（`recordInput: false` 生效，草稿原文未进日志），`command/done` 仅含 `kind`/`text`（润色结果）。
 
 ## 待定项（已拍板）
 
