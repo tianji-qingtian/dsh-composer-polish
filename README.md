@@ -17,6 +17,12 @@ One-click draft polisher for the [DeepSeek Harness](https://github.com/deepseek-
 - **i18n zh/en** — button label and tooltip follow the harness `locale` service.
 - **Language and voice follow the draft** — the rewrite answers in the draft's language and keeps the user's voice (it strips filler but won't turn the text more formal, salesy, or robotic); code blocks, file paths, command lines, identifiers, and technical terms stay verbatim.
 
+## Screenshots
+
+The ✨ Polish button in the composer tool row, next to the send button:
+
+![polish button demo](imgs/demo1.png)
+
 ## Install
 
 ### Prerequisites
