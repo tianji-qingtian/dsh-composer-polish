@@ -13,7 +13,13 @@
  * result appears in `command/done`.
  */
 
-export const inject = ['llm']
+// `commands` is a hard dependency so the plugin waits until the service is
+// provided before apply() runs. A bare `ctx.get('commands')` here races the
+// composition: with only `llm` injected, apply() can run before the commands
+// registry exists, return undefined, and silently skip registration (the
+// exact bug that left /polish unregistered while /router, from a plugin that
+// happens to inject more services, worked).
+export const inject = ['llm', 'commands']
 
 const PROVIDER = 'deepseek-official'
 const MODEL = 'deepseek-v4-flash'
@@ -88,13 +94,7 @@ async function findFlashModel(ctx) {
 }
 
 export function apply(ctx) {
-  const commands = ctx.get('commands')
-  if (commands === undefined) {
-    console.error('dsh-composer-polish: commands service unavailable; /polish is not registered')
-    return
-  }
-
-  commands.register({
+  ctx.commands.register({
     name: 'polish',
     description: 'rewrite the current composer draft for clarity and structure (normally invoked by the ✨ button)',
     input: { hint: 'draft text' },

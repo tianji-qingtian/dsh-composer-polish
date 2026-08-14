@@ -15,9 +15,9 @@ const makeCtx = ({ streamImpl, models }) => {
       stream: streamImpl,
       listModels: async () => models ?? [],
     },
-    get: (name) => (name === 'commands' ? {
+    commands: {
       register: (def) => registered.push(def),
-    } : undefined),
+    },
   }
   apply(ctx)
   if (registered.length !== 1) throw new Error('expected one command registration, got ' + registered.length)

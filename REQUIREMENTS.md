@@ -81,6 +81,7 @@ good answer. Rules:
 - 新增**防覆盖守卫**（基线未要求）：点击时记 `draftRev`，润色期间草稿被继续编辑则丢弃结果，不回填——避免覆盖用户更新的编辑。
 - 新增**模型回退**（基线未要求）：固定 `deepseek-v4-flash` 在 provider 目录缺失时，用 `listModels` 发现的 flash 类模型重试一次。
 - **v0.1.0 → v0.1.1 修 bug**：`useInput` 是 selector hook，必须传 selector（官方写法 `useInput((s) => s)`）；v0.1.0 写成裸调用 `useInput()`，运行时抛 `w is not a function`，被 slot 错误边界捕获后退位（abdicate）整个条目——按钮不渲染且无任何报错提示。教训：slot 标准 props 里所有 `use*` 选择器 hook 都要带 selector 参数（`useProjection` 除外，它本身是 (key, selector) 形式）。
+- **v0.1.1 → v0.1.2 修 bug**：host 半用 `ctx.get('commands')` 裸查会**竞态**——只 `inject: ['llm']` 时 apply 可能在 `commands` 服务就绪前执行，拿到 undefined 静默跳过注册（`/polish` 未注册，而 model-router 因注入更多服务跑得晚、`/router` 恰好注册成功）。修复：`inject: ['llm', 'commands']` 硬注入 + `ctx.commands.register(...)`。教训：apply 里要用到的服务一律硬注入，不要用可选裸查去拿"几乎必然存在"的服务。
 
 ## 参考实现
 

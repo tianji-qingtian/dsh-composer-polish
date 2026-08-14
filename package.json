@@ -1,6 +1,6 @@
 {
   "name": "dsh-composer-polish",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Composer draft polisher for DeepSeek Harness: a ✨ button in the composer tool row rewrites the current draft with a zero-prefix flash call and fills the polished text straight back into the input box.",
   "type": "module",
   "packageManager": "pnpm@11.14.0",
