@@ -15,7 +15,7 @@
 - **隐私**——`/polish` 命令注册时设 `recordInput: false`，草稿原文不进会话日志；只有润色结果会记录在 `command/done`。
 - **不造新协议**——Client→Host 复用 harness 内置的 `commands` remote（和内置 `/` 命令走同一条路）。
 - **中英双语 UI**——按钮文案、tooltip 跟随 harness 的 `locale` 服务。
-- **跟随草稿语言**——改写提示词要求用草稿的语言作答；代码块、文件路径、命令行、技术术语原样保留。
+- **跟随草稿语言与语气**——改写用草稿的语言作答，并**保留作者语气**（去掉口水话，但不会改得更正式、更营销腔、更机器腔）；代码块、文件路径、命令行、标识符、技术术语原样保留。
 
 ## 安装
 
@@ -34,7 +34,7 @@ npm install -g @deepseek-ai/dsh
 ```sh
 # 1. 把 bundle 加进 web profile（pnpm 托管；仓库里提交了构建好的 lib/ 产物，
 #    安装时不跑构建脚本）
-dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#main"
+dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.3"
 
 # 2. 用该 profile 重启 harness —— add 只改 profile 文件，
 #    已运行的实例不会热加载新 bundle
@@ -47,8 +47,8 @@ dsh --profile web
 
 | 环节 | 机制 |
 | --- | --- |
-| 按钮座位 | `conversation.input.right` 列表 slot（session scope）；标准 kit 的 `useInput()` 读草稿，`inputActions.setDraft()` 写回 |
-| Client → Host | 内置 `commands` remote：`remote.commands.execute(sessionId, '/polish ' + draft)`——和内置斜杠命令同一往返通道，无自定义 RPC |
+| 按钮座位 | `conversation.input.right` 列表 slot（session scope）；标准 kit 的 selector hook `useInput((s) => s)` 读草稿，`inputActions.setDraft()` 写回 |
+| Client → Host | 内置 `commands` remote，硬注入（`inject: ['remote', 'remote.commands']`）：`ctx.remote.commands.execute(sessionId, '/polish ' + draft)`——和内置斜杠命令同一往返通道，无自定义 RPC |
 | Host 改写 | `/polish` 命令 handler → 零前缀 `ctx.llm.stream`（`deepseek-official` / `deepseek-v4-flash`，`reasoningEffort: 'off'`，`maxTokens` 2000），固定模型缺失时用目录里发现的 flash 类模型重试一次 |
 | 结果通道 | handler 返回 `{ kind: 'success', text }`；client 从 `CommandExecution.result.text` 取出，`setDraft` 回填 |
 | 隐私 | `recordInput: false` → `command/run` 不写 `args`，草稿原文永不落会话日志 |

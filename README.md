@@ -15,7 +15,7 @@ One-click draft polisher for the [DeepSeek Harness](https://github.com/deepseek-
 - **Privacy** — the `/polish` command registers with `recordInput: false`, so the raw draft never lands in the session log; only the polished result is recorded in `command/done`.
 - **No custom wire protocol** — Client→Host rides the harness's built-in `commands` remote (the same channel the shipped `/` commands use).
 - **i18n zh/en** — button label and tooltip follow the harness `locale` service.
-- **Language follows the draft** — the rewrite prompt answers in the draft's language; code blocks, file paths, command lines, and technical terms are kept verbatim.
+- **Language and voice follow the draft** — the rewrite answers in the draft's language and keeps the user's voice (it strips filler but won't turn the text more formal, salesy, or robotic); code blocks, file paths, command lines, identifiers, and technical terms stay verbatim.
 
 ## Install
 
@@ -34,7 +34,7 @@ npm install -g @deepseek-ai/dsh
 ```sh
 # 1. add the bundle to your web profile (pnpm-backed; the built lib/ artifacts
 #    are committed in this repo, so no build script runs at install time)
-dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#main"
+dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.3"
 
 # 2. restart the harness with that profile — `add` only edits the profile
 #    files; a running instance does not hot-load the new bundle
@@ -47,8 +47,8 @@ After the restart the ✨ button appears in the composer tool row, next to the s
 
 | Piece | Mechanism |
 | --- | --- |
-| Button seat | `conversation.input.right` list slot (session scope); the standard kit's `useInput()` reads the draft, `inputActions.setDraft()` writes it back |
-| Client → Host | built-in `commands` remote: `remote.commands.execute(sessionId, '/polish ' + draft)` — the same roundtrip the shipped slash commands use; no custom RPC |
+| Button seat | `conversation.input.right` list slot (session scope); the standard kit's selector hook `useInput((s) => s)` reads the draft, `inputActions.setDraft()` writes it back |
+| Client → Host | built-in `commands` remote, hard-injected (`inject: ['remote', 'remote.commands']`): `ctx.remote.commands.execute(sessionId, '/polish ' + draft)` — the same roundtrip the shipped slash commands use; no custom RPC |
 | Host rewrite | `/polish` command handler → zero-prefix `ctx.llm.stream` on `deepseek-official` / `deepseek-v4-flash` (`reasoningEffort: 'off'`, `maxTokens` 2000), one-shot, with a one-time catalog fallback when the pinned model id is unavailable |
 | Result channel | handler returns `{ kind: 'success', text }`; the client reads it from `CommandExecution.result.text` and fills it back via `setDraft` |
 | Privacy | `recordInput: false` → `command/run` omits `args`, so the raw draft is never written to the session log |

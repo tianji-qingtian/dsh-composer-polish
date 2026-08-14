@@ -1,6 +1,6 @@
 # dsh-composer-polish — 需求文档
 
-> 状态：已开发（v0.1.0）。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
+> 状态：已开发（v0.1.3）。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
 
 ## 一句话目标
 
@@ -28,32 +28,41 @@
 
 ## 关键契约（已确认，全部现成）
 
-- **读草稿**：slot 标准 prop `useInput()` → `InputState.draft: string`
+- **读草稿**：slot 标准 prop `useInput((s) => s)` → `InputState.draft: string`（selector hook，必须传 selector）
 - **写草稿**：slot 标准 prop `inputActions.setDraft(text: string): void`（官方唯一公开写入路径）
 - **按钮位置**：`conversation.input.right`（session scope 工具行，官方文档指定"需要点击的东西放工具行"）
-- **Host 往返**：静态插件没有 `host.call`，复用现成 remote——`ctx.remote.commands.execute(sessionId, '/polish ' + draft)`（model-router 的按钮已验证此路可用）
-- **Host 端改写**：`/polish` 命令 → `ctx.llm.stream`（provider=deepseek-official，model=deepseek-v4-flash，`reasoningEffort: 'off'`，`maxTokens` ~2000）
+- **Host 往返**：静态插件没有 `host.call`，复用现成 remote——client 硬注入 `inject: ['remote', 'remote.commands']` 后 `ctx.remote.commands.execute(sessionId, '/polish ' + draft)`
+- **Host 端改写**：`/polish` 命令 → `ctx.llm.stream`（provider=deepseek-official，model=deepseek-v4-flash，`reasoningEffort: 'off'`，`maxTokens` ~2000）；host 半硬注入 `inject: ['llm', 'commands']`
 - **结果回传**：命令 handler 返回 `{ kind: 'success', text: 润色后文本 }`；client 从 `CommandExecution.result.text` 取出
 - **隐私**：命令定义设 `recordInput: false`，草稿原文不进会话日志
 - **i18n**：`locale` 服务注册 `zh`/`en` 字典（按钮 tooltip、busy 文案）
 - **打包**：照抄 model-router——`package.json` 的 `dsh.bundle.patch` + `dsh.client` 声明、`cordis.patch.yml`、tsdown 双产物（`lib/index.js` ESM host + `lib/client.js` ModuleLoader bundle）
 
-## 改写提示词（核心，需打磨）
-
-初版草案（host 端 `/polish` 命令内）：
+## 改写提示词（v0.1.3 最终版，host 端 `/polish` 命令内）
 
 ```
-You are polishing a draft the user typed into the chat composer.
-Rewrite it so it is clearer, better structured, and more likely to get a
-good answer. Rules:
-- Keep the original intent and ALL factual details, constraints and
-  code; never add new requirements or drop information.
-- Remove filler and rambling; make it concise.
-- Keep code blocks, file paths, command lines, and technical terms verbatim.
-- Use Markdown structure (headings/lists) only when it genuinely helps.
-- Answer in the same language as the draft.
-- Output ONLY the polished draft, no preamble, no explanation.
+You are a writing assistant that polishes a draft the user typed into a chat composer.
+
+Goal:
+Rewrite the draft so it is clearer, better organized, and more likely to get a good answer from an AI — without changing what it asks for.
+
+Preserve:
+- Keep the original intent, every factual detail, constraint, and requirement; never add or drop information.
+- Keep code blocks, file paths, command lines, error messages, identifiers, and technical terms exactly as written.
+- Match the draft's language; for mixed drafts, follow the dominant language.
+- Keep the user's voice: don't make it more formal, salesy, or robotic than the original.
+
+Improve:
+- Remove filler, rambling, and repetition; tighten the wording.
+- Fix grammar, typos, and unclear phrasing.
+- Reorganize only when it clarifies; use Markdown (headings/lists) only when it genuinely helps.
+- If the draft is already clear and well-organized, change as little as possible.
+
+Output:
+- Return ONLY the polished draft. No preamble, no explanations, no surrounding quotes, and no code fences.
 ```
+
+> 实际发送时，这段 instructions 后面拼 `<draft>...</draft>` 包裹的草稿原文，作为单条 user 消息。
 
 ## 验收清单
 
