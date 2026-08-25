@@ -1,6 +1,6 @@
 # dsh-composer-polish — 需求文档
 
-> 状态：已开发并验收通过（v0.1.3）。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
+> 状态：已开发并验收通过（v0.1.3），v0.1.4 为 harness 0.1.1 兼容修复。本文件是需求基线，实现见 `src/index.js`（host）与 `src/client/index.js`（client），验收记录见文末。
 
 ## 一句话目标
 
@@ -92,6 +92,7 @@ Output:
 - **v0.1.0 → v0.1.1 修 bug**：`useInput` 是 selector hook，必须传 selector（官方写法 `useInput((s) => s)`）；v0.1.0 写成裸调用 `useInput()`，运行时抛 `w is not a function`，被 slot 错误边界捕获后退位（abdicate）整个条目——按钮不渲染且无任何报错提示。教训：slot 标准 props 里所有 `use*` 选择器 hook 都要带 selector 参数（`useProjection` 除外，它本身是 (key, selector) 形式）。
 - **v0.1.1 → v0.1.2 修 bug**：host 半用 `ctx.get('commands')` 裸查会**竞态**——只 `inject: ['llm']` 时 apply 可能在 `commands` 服务就绪前执行，拿到 undefined 静默跳过注册（`/polish` 未注册，而 model-router 因注入更多服务跑得晚、`/router` 恰好注册成功）。修复：`inject: ['llm', 'commands']` 硬注入 + `ctx.commands.register(...)`。教训：apply 里要用到的服务一律硬注入，不要用可选裸查去拿"几乎必然存在"的服务。
 - **v0.1.2 → v0.1.3 提示词优化**：按提示工程最佳实践重写 `POLISH_INSTRUCTIONS`——分节（Goal/Preserve/Improve/Output）、新增"保留作者语气（不要更正式/营销腔/机器腔）"、"已经很清晰就少改"的最小改动守卫、输出约束补"不要代码围栏"、保留清单补"标识符"。参考 Promptise / AI.gov.uk / OpenAI Academy / few-shot 指南。
+- **v0.1.3 → v0.1.4 兼容 harness 0.1.1**：harness 0.1.1-rc.2 起 `remote.commands.execute` 签名变为 `(agentId, line, images, signal?)`——`images` 从 `line` 与 `signal` 之间插入，remote 绑定器对参数个数做严格校验（`client api: commands/execute expected 3 business argument(s) plus an optional AbortSignal`）。旧的两参数调用被直接抛错、按钮静默失效。修复：client 端改传 `execute(sessionId, '/polish ' + payload, [])`；peerDependencies 升到 `^0.1.1-rc.2`（`^0.1.0-rc.6` 语义上匹配不到 0.1.1 系列）。教训：升级 harness 后要按官方调用方（`dsh-client-ui-commands` 的 `execute(session, line, images = [])`）核对 remote 方法签名。
 
 ## 参考实现
 
