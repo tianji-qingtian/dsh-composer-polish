@@ -105,7 +105,7 @@ export function apply(ctx) {
       const draftRev = input.draftRev
       const payload = draft.length > MAX_DRAFT_LENGTH ? draft.slice(0, MAX_DRAFT_LENGTH) : draft
       setBusy(true)
-      ctx.remote.commands.execute(sessionId, '/polish ' + payload)
+      ctx.remote.commands.execute(sessionId, '/polish ' + payload, [])
         .then((res) => {
           const value = res && res.ok ? res.value : null
           const result = value && value.result ? value.result : null
