@@ -40,7 +40,7 @@ npm install -g @deepseek-ai/dsh
 ```sh
 # 1. add the bundle to your web profile (pnpm-backed; the built lib/ artifacts
 #    are committed in this repo, so no build script runs at install time)
-dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.4"
+dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.5"
 
 # 2. restart the harness with that profile — `add` only edits the profile
 #    files; a running instance does not hot-load the new bundle
