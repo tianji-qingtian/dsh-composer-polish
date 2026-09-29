@@ -94,6 +94,8 @@ Output:
 - **v0.1.2 → v0.1.3 提示词优化**：按提示工程最佳实践重写 `POLISH_INSTRUCTIONS`——分节（Goal/Preserve/Improve/Output）、新增"保留作者语气（不要更正式/营销腔/机器腔）"、"已经很清晰就少改"的最小改动守卫、输出约束补"不要代码围栏"、保留清单补"标识符"。参考 Promptise / AI.gov.uk / OpenAI Academy / few-shot 指南。
 - **v0.1.3 → v0.1.4 兼容 harness 0.1.1**：harness 0.1.1-rc.2 起 `remote.commands.execute` 签名变为 `(agentId, line, images, signal?)`——`images` 从 `line` 与 `signal` 之间插入，remote 绑定器对参数个数做严格校验（`client api: commands/execute expected 3 business argument(s) plus an optional AbortSignal`）。旧的两参数调用被直接抛错、按钮静默失效。修复：client 端改传 `execute(sessionId, '/polish ' + payload, [])`；peerDependencies 升到 `^0.1.1-rc.2`（`^0.1.0-rc.6` 语义上匹配不到 0.1.1 系列）。教训：升级 harness 后要按官方调用方（`dsh-client-ui-commands` 的 `execute(session, line, images = [])`）核对 remote 方法签名。
 
+- **v0.1.5 → v0.1.6 兼容 harness 0.2.0**：harness 0.2.0-rc.1 起所有 `@deepseek-ai/dsh-*` peer 声明都会在**安装时与 profile 启动时**被逐条校验（`Plugin dsh-composer-polish@0.1.5 is incompatible with dsh 0.2.0-rc.1: peerDependencies {...}`），不匹配的 bundle 直接被跳过——表现就是升级 harness 后 ✨ 按钮凭空消失、无任何报错。修复：peer 范围升到 `^0.2.0-rc.1`，`dsh.client.inject` 改为当前包名（补 `dsh-api-session-controller` / `dsh-client-locale` / `dsh-client-ui-session`），tsdown 的 platform external 列表同步换成 0.2.0 仍在的包（`dsh-client-web-react` / `dsh-client-schema-form` / `dsh-client-runtime` 已不存在）。宿主半场代码本身无改动——`commands.register`（含 `recordInput`）、`llm.stream`、client 侧 `useInput` 选择器 + `inputActions.setDraft` + `remote.commands.execute(sessionId, line, [])` 在 0.2.0 全部未变。教训：harness 升级后第一件事是核对 peer 范围与新 runtime 版本；用 `dsh --profile <p> --dump-config` 看 `skipping profile bundle` 最直接。
+
 ## 参考实现
 
 - model-router 的按钮→`commands` remote 往返：`dsh-model-router/src/client/index.js`（setMode）

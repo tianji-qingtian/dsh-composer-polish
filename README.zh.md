@@ -27,7 +27,7 @@
 
 ### 前置条件
 
-`dsh` CLI 必须在 `PATH` 上。如果你只通过 `npx` 跑过 harness，`dsh` 其实没装，会报 `zsh: command not found: dsh`——先全局装一次：
+`dsh` CLI 必须在 `PATH` 上。如果你只通过 `npx` 跑过 harness，`dsh` 其实没装，会报 `zsh: command not found: dsh`——先全局装一次。本版本对应 harness `0.2.0-rc.1`（更早的 harness 请装 tag `v0.1.5`）：
 
 ```sh
 npm install -g @deepseek-ai/dsh
@@ -40,7 +40,7 @@ npm install -g @deepseek-ai/dsh
 ```sh
 # 1. 把 bundle 加进 web profile（pnpm 托管；仓库里提交了构建好的 lib/ 产物，
 #    安装时不跑构建脚本）
-dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.5"
+dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.6"
 
 # 2. 用该 profile 重启 harness —— add 只改 profile 文件，
 #    已运行的实例不会热加载新 bundle
@@ -72,6 +72,18 @@ dsh --profile web
 | 5 | 草稿含图片附件 | 只润文字；图片不动、不丢 |
 | 6 | 中/英文草稿 | 按草稿语言改写 |
 | 7 | 代码块/列表/技术术语 | 结构保留、代码原样、不改技术准确性 |
+
+## Harness 兼容性
+
+针对 harness `0.2.0-rc.1` 构建并验证。
+
+harness 会在**安装时**和 **profile 启动时**校验插件的 `@deepseek-ai/dsh*` `peerDependencies` 范围：
+声明的范围不覆盖当前 `dsh --version` 的插件会被拒绝或跳过（`skipping profile bundle
+"dsh-composer-polish": Plugin dsh-composer-polish@… is incompatible with dsh …`），这就是
+harness 一升级插件就从输入框里凭空消失的原因。v0.1.6 把范围升到 `^0.2.0-rc.1`；宿主代码本身无需改动——
+`commands.register`（含 `recordInput`）、`llm.stream`，以及 client 侧的 `useInput` 选择器 +
+`inputActions.setDraft` + `remote.commands.execute(sessionId, line, [])` 在 0.2.0 均未变化。
+`0.1.x` 老 harness 请用 tag `v0.1.5`。
 
 ## 构建
 

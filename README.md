@@ -27,7 +27,7 @@ The ✨ Polish button in the composer tool row, next to the send button:
 
 ### Prerequisites
 
-The `dsh` CLI must be on your `PATH`. If you only ever ran the harness through `npx`, `dsh` is not installed and you will get `zsh: command not found: dsh` — install it globally first:
+The `dsh` CLI must be on your `PATH`. If you only ever ran the harness through `npx`, `dsh` is not installed and you will get `zsh: command not found: dsh` — install it globally first. This release targets harness `0.2.0-rc.1` (for an older harness use tag `v0.1.5`):
 
 ```sh
 npm install -g @deepseek-ai/dsh
@@ -40,7 +40,7 @@ npm install -g @deepseek-ai/dsh
 ```sh
 # 1. add the bundle to your web profile (pnpm-backed; the built lib/ artifacts
 #    are committed in this repo, so no build script runs at install time)
-dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.5"
+dsh plugin --profile web add "github:tianji-qingtian/dsh-composer-polish#v0.1.6"
 
 # 2. restart the harness with that profile — `add` only edits the profile
 #    files; a running instance does not hot-load the new bundle
@@ -72,6 +72,20 @@ After the restart the ✨ button appears in the composer tool row, next to the s
 | 5 | Draft has image attachments | only the text is polished; images untouched |
 | 6 | Chinese / English draft | rewritten in the draft's language |
 | 7 | Code blocks / lists / technical terms | structure kept, code verbatim, no accuracy changes |
+
+## Harness compatibility
+
+Built and verified against harness `0.2.0-rc.1`.
+
+The harness checks a plugin's `@deepseek-ai/dsh*` `peerDependencies` ranges both when
+the package is installed and when a profile starts. A plugin whose declared range does
+not cover the running `dsh --version` is refused or skipped (`skipping profile bundle
+"dsh-composer-polish": Plugin dsh-composer-polish@… is incompatible with dsh …`), which
+is why an outdated plugin simply disappears from the composer after a harness upgrade.
+v0.1.6 widens the ranges to `^0.2.0-rc.1`; the host code itself needed no change —
+`commands.register` (with `recordInput`), `llm.stream`, and the client-side
+`useInput` selector + `inputActions.setDraft` + `remote.commands.execute(sessionId,
+line, [])` are unchanged in 0.2.0. For the `0.1.x` harness line use tag `v0.1.5`.
 
 ## Build
 
